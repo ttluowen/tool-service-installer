@@ -1,0 +1,8 @@
+Windows 服务安装、卸载工具
+
+
+把要执行的 jar 包放在根目录或其它指定位置，具体指向由 bin 目录里的 config.properties 配置里的 jar 项来配置。
+打开 config.properties 可以设置服务名称、描述、是否自动启动等。
+
+
+在 Win7、Win8、Win10、Win2008 等系统下运行时，请使用管理员权限运行。
