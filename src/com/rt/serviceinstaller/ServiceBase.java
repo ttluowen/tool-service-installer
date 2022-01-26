@@ -1,11 +1,12 @@
 package com.rt.serviceinstaller;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import com.rt.log.Logger;
+import com.rt.util.number.NumberUtil;
+import com.rt.util.proterty.PropertyUtil;
+import com.rt.util.string.StringUtil;
+import com.rt.web.config.SystemConfig;
+
+import java.io.*;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -13,19 +14,13 @@ import java.util.List;
 import java.util.Properties;
 import java.util.jar.Attributes;
 
-import com.rt.log.Logger;
-import com.rt.util.number.NumberUtil;
-import com.rt.util.proterty.PropertyUtil;
-import com.rt.util.string.StringUtil;
-import com.rt.web.config.SystemConfig;
-
 
 /**
  * 系统服务的安装与卸载管理类。
- * 
- * @since 2016-01-20
- * @version 1.0
+ *
  * @author Luowen
+ * @version 1.0
+ * @since 2016-01-20
  */
 public class ServiceBase {
 
@@ -39,7 +34,7 @@ public class ServiceBase {
 
 	// 配置文件的属性。
 	private Properties config;
-	
+
 
 	/**
 	 * 构造函数。
@@ -54,7 +49,7 @@ public class ServiceBase {
 	 * 初始化。
 	 */
 	private void init() {
-		
+
 		// 检测是否初始化过了。
 		if (inited) {
 			return;
@@ -64,13 +59,14 @@ public class ServiceBase {
 		// 标记已初始化过。
 		inited = true;
 
-		
+
 		// 获取系统运行所在路径。
 		String systemPath = getSystemPath();
 
 
 		// 设置系统配置管理类的系统目录。
-		SystemConfig.setSystemPath(systemPath);;
+		SystemConfig.setSystemPath(systemPath);
+		;
 
 
 		// 设置日志的系统目录。
@@ -97,7 +93,7 @@ public class ServiceBase {
 
 
 		// 先执行卸载操作。
-		uninstall(); 
+		uninstall();
 
 
 		// 创建安装的命令行。
@@ -129,75 +125,75 @@ public class ServiceBase {
 
 	/**
 	 * 获取系统运行所在的位置。
-	 * 
+	 *
 	 * @return
 	 */
 	private String getSystemPath() {
-	
+
 		// 获取当前系统运行环境的磁盘路径，并统一将 / 目录转换成 \ 方式。
 		String path = System.getProperty("user.dir");
-		
+
 		// 将路径等转换成当前系统格式，并在最后自动补足目录符号。
 		path = SystemConfig.formatFilePath(path);
-	
-	
+
+
 		return path;
 	}
 
-	
+
 	/**
 	 * 获取当前 java 版本号。
 	 * 1.7.0_45
 	 * 1.8.0_60
-	 * 
+	 *
 	 * @return
 	 */
 	private String getJavaVersion() {
-	
+
 		return System.getProperty("java.version");
 	}
 
-	
+
 	/**
 	 * 检测 Java 的版本号。
-	 * 
+	 *
 	 * @return
 	 */
 	private boolean checkJavaVersion(String version) {
-	
+
 		// 再根据版本号来比较是否满足最低要求。。
 		return getVersion(version) >= MIN_JAVA_VERSION;
 	}
 
-	
+
 	/**
 	 * 将字符字符串的版本号转换成浮点数型的。
-	 * 
+	 * <p>
 	 * 1.7.0_45 ==> 1.7
 	 * 1.8.0_60 ==> 1.8
-	 * 
+	 *
 	 * @param version
 	 * @return
 	 */
 	private float getVersion(String version) {
-		
+
 		// 验证参数有效性。
 		if (StringUtil.isEmpty(version)) {
 			return 0f;
 		}
-	
-	
+
+
 		// 分割出各段版本号。
 		String[] splitedVersion = version.split("\\.");
-	
-	
+
+
 		/*
 		 * 取最前面的大版本号，转换成浮点数。
 		 * 通过浮点数的方式比较版本号，只取前两级版本号标识。
 		 * 1.0
 		 */
 		float versionFloat = NumberUtil.parseFloat(splitedVersion[0]);
-	
+
 		/*
 		 * 添加第二段版本号。
 		 * 最终形成一个浮点数的版本标识。
@@ -207,19 +203,19 @@ public class ServiceBase {
 		if (splitedVersion.length > 1) {
 			versionFloat += NumberUtil.parseFloat("0." + splitedVersion[1]);
 		}
-	
-	
+
+
 		return versionFloat;
 	}
 
-	
+
 	/**
 	 * 读取配置文件。
-	 * 
+	 *
 	 * @return
 	 */
 	private Properties getConfigProp() {
-	
+
 		if (config != null) {
 			return config;
 		} else {
@@ -227,15 +223,15 @@ public class ServiceBase {
 		}
 	}
 
-	
+
 	/**
 	 * 获取 config 文件的配置项。
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */
 	private String getConfigValue(String name) {
-		
+
 		String value = StringUtil.unNull(getConfigProp().getProperty(name));
 
 
@@ -250,112 +246,112 @@ public class ServiceBase {
 		return value;
 	}
 
-	
+
 	/**
 	 * 获取 jar 的配置内容。
-	 * 
+	 *
 	 * @return
 	 */
 	private String getConfigOfJar() {
-		
+
 		return getConfigValue("jar");
 	}
 
-	
+
 	/**
 	 * 获取 serviceName 的配置内容。
-	 * 
+	 *
 	 * @return
 	 */
 	private String getConfigOfServiceName() {
-	
+
 		return getConfigValue("serviceName");
 	}
 
-	
+
 	/**
 	 * 获取 serviceDescription 的配置内容。
-	 * 
+	 *
 	 * @return
 	 */
 	private String getConfigOfServiceDescription() {
-		
+
 		return getConfigValue("serviceDescription");
 	}
 
-	
+
 	/**
 	 * 获取 startup 的配置内容。
-	 * 
+	 *
 	 * @return
 	 */
 	private String getConfigOfStartup() {
-		
+
 		return getConfigValue("startup");
 	}
-	
-	
+
+
 	/**
 	 * 获取停止服务时调用的类名。
-	 * 
+	 *
 	 * @return
 	 */
 	private String getConfigOfStopClass() {
-		
+
 		return getConfigValue("stopClass");
 	}
-	
-	
+
+
 	/**
 	 * 获取初始内存大小，单位 MB，如果参数无效则使用默认值 32。
-	 * 
+	 *
 	 * @return
 	 */
 	private int getConfigOfXms() {
-		
+
 		int value = NumberUtil.parseInt(getConfigValue("xms"));
-		
+
 		if (value == 0) {
 			value = 32;
 		}
-		
-		
-		return value; 
+
+
+		return value;
 	}
-	
-	
+
+
 	/**
 	 * 获取最大内存大小，单位 MB，如果参数无效则使用默认值 2048。
-	 * 
+	 *
 	 * @return
 	 */
 	private int getConfigOfXmx() {
-		
+
 		int value = NumberUtil.parseInt(getConfigValue("xmx"));
-		
+
 		if (value == 0) {
 			value = 2048;
 		}
-		
-		
-		return value; 
+
+
+		return value;
 	}
-	
-	
+
+
 	/**
 	 * 获取 log 日志配置路径。
-	 * 
+	 *
 	 * @return
 	 */
 	private String getConfigOfRoot() {
-		
+
 		return getConfigValue("root");
 	}
 
 
 	/**
 	 * 获取 jar 包里的 main 类。
-	 * 
+	 *
 	 * @return
 	 */
 	private String getMainClassName() {
@@ -396,8 +392,8 @@ public class ServiceBase {
 		} catch (Exception e) {
 			Logger.printStackTrace(e);
 		}
-	
-	
+
+
 		return className;
 	}
 
@@ -405,7 +401,7 @@ public class ServiceBase {
 	/**
 	 * 获取当前操作系统的位数。
 	 * 32、64
-	 * 
+	 *
 	 * @return
 	 */
 	private int getOsBit() {
@@ -414,47 +410,47 @@ public class ServiceBase {
 		String osArch = System.getProperty("os.arch");
 		// 系统位数。
 		int osBit = osArch.indexOf("64") != -1 ? 64 : 32;
-		
-		
+
+
 		return osBit;
 	}
-	
-	
+
+
 	/**
 	 * 获取当前 JVM 的位数。
-	 * 
+	 *
 	 * @return
 	 */
 	private int getJvmBit() {
-		
+
 		// Java 虚拟机名称。
 		String jvmName = System.getProperty("java.vm.name");
 		// JVM 位数。
 		int jvmBit = jvmName.indexOf("64") != -1 ? 64 : 32;
-		
-		
+
+
 		return jvmBit;
 	}
-	
-	
+
+
 	/**
 	 * 获取 JavaService.exe 文件的路径。
 	 * 不同的操作系统位数，会使用不同的文件。
-	 * 
+	 *
 	 * @return
 	 */
 	private String getJavaServicePath() {
-		
+
 		String javaService = SystemConfig.getSystemPath() + "JavaService-" + getOsBit() + "bit.exe";
 
 
 		return javaService;
 	}
-	
-	
+
+
 	/**
 	 * 获取服务日志打开位置。
-	 * 
+	 *
 	 * @return
 	 */
 	private String getRootPath() {
@@ -485,17 +481,17 @@ public class ServiceBase {
 		return root;
 	}
 
-	
+
 	/**
 	 * 创建安装服务的命令行。
-	 * 
+	 *
 	 * @return
 	 */
 	private String buildInstallCommand() {
-		
+
 		// 获取系统运行时路径。
 		String systemPath = SystemConfig.getSystemPath();
-	
+
 		// 系统位数。
 		int osBit = getOsBit();
 		// JVM 位数。
@@ -522,7 +518,7 @@ public class ServiceBase {
 
 		// 停止服务时调用的类名。
 		String stopClass = getConfigOfStopClass();
-		
+
 		// 获取初始化内存大小。
 		int xms = getConfigOfXms();
 		// 获取最大内存大小。
@@ -559,7 +555,7 @@ public class ServiceBase {
 		// 检测要安装的服务名是否可用。
 		if (serviceName.isEmpty()) {
 			Logger.log("服务名称不可用");
-	
+
 			return null;
 		}
 
@@ -572,54 +568,53 @@ public class ServiceBase {
 
 
 		StringBuffer command = new StringBuffer()
-			// JavaService.exe 文件。
-			.append("\"").append(javaServicePath).append("\" ")
-			// 安装的服务名称。
-			.append("-install ").append(serviceName).append(" ")
-			// JVM 路径。
-			.append("\"").append(jvmPath).append("\" ")
-			// JVM 运行内存配置，初始化内存、最大内存。
-			.append("-Xms").append(xms).append("M -Xmx").append(xmx).append("M ")
-			// 要运行的 Jar 包路径。
-			.append("-Djava.class.path=\"").append(runJarPath).append("\" ")
-			// 启动的 main 类。
-			.append("-start ").append(mainClass).append(" ")
-			// 服务停止时调用的类。
-			.append(
-					stopClass.isEmpty()
-					? ""
-					: "-stop " + stopClass + " "
-			)
-			// 服务日志输出位置。
-			.append("-out \"").append(serviceOutPath).append("\" ")
-			// 服务错误输出位置。
-			.append("-err \"").append(serviceErrorPath).append("\" ")
-			// 服务运行时的环境位置。
-			.append("-current \"").append(currentPath).append("\" ")
-			// 服务启动类型。
-			.append("-").append(startup).append(" ")
-			// 服务描述。
-			.append("-description \"").append(serviceDescription).append("\"")
+				// JavaService.exe 文件。
+				.append("\"").append(javaServicePath).append("\" ")
+				// 安装的服务名称。
+				.append("-install ").append(serviceName).append(" ")
+				// JVM 路径。
+				.append("\"").append(jvmPath).append("\" ")
+				// JVM 运行内存配置，初始化内存、最大内存。
+				.append("-Xms").append(xms).append("M -Xmx").append(xmx).append("M ")
+				// 要运行的 Jar 包路径。
+				.append("-Djava.class.path=\"").append(runJarPath).append("\" ")
+				// 启动的 main 类。
+				.append("-start ").append(mainClass).append(" ")
+				// 服务停止时调用的类。
+				.append(
+						stopClass.isEmpty()
+								? ""
+								: "-stop " + stopClass + " "
+				)
+				// 服务日志输出位置。
+				.append("-out \"").append(serviceOutPath).append("\" ")
+				// 服务错误输出位置。
+				.append("-err \"").append(serviceErrorPath).append("\" ")
+				// 服务运行时的环境位置。
+				.append("-current \"").append(currentPath).append("\" ")
+				// 服务启动类型。
+				.append("-").append(startup).append(" ")
+				// 服务描述。
+				.append("-description \"").append(serviceDescription).append("\"")
 
-			// 换行，添加到下一条执行命令。
-			.append("\n")
+				// 换行，添加到下一条执行命令。
+				.append("\n")
 
-			// 启动服务。
-			.append("NET START ").append(serviceName)
-		;
-	
-	
+				// 启动服务。
+				.append("NET START ").append(serviceName);
+
+
 		return command.toString();
 	}
-	
-	
+
+
 	/**
 	 * 创建卸载的命令行。
-	 * 
+	 *
 	 * @return
 	 */
 	private String buildUninstallCommand() {
-		
+
 		// 获取使用的服务名称。
 		String serviceName = getConfigOfServiceName();
 
@@ -634,9 +629,8 @@ public class ServiceBase {
 
 		// 设置删除服务的命令行。
 		StringBuffer command = new StringBuffer()
-			.append("net stop ").append(serviceName).append("\n")
-			.append("sc delete ").append(serviceName)
-		;
+				.append("net stop ").append(serviceName).append("\n")
+				.append("sc delete ").append(serviceName);
 
 
 		return command.toString();
@@ -645,7 +639,7 @@ public class ServiceBase {
 
 	/**
 	 * 执行安装服务的命令行。
-	 * 
+	 *
 	 * @param command
 	 */
 	private void executeCommand(String command) {
@@ -688,7 +682,7 @@ public class ServiceBase {
 
 	/**
 	 * 监视命令执行时打印的流信息。
-	 * 
+	 *
 	 * @param in
 	 */
 	private void commandMonitor(final InputStream in) {

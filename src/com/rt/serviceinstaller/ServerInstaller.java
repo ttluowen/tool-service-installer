@@ -2,20 +2,20 @@ package com.rt.serviceinstaller;
 
 /**
  * 服务安装器执行入口类。
- * 
- * @since 2016-01-20
- * @version 1.0
+ *
  * @author Luowen
+ * @version 1.0
+ * @since 2016-01-20
  */
 public class ServerInstaller {
 
 	/**
 	 * 执行入口。
-	 * 
+	 *
 	 * @param args install|uninstall。
 	 */
 	public static void main(String[] args) {
-		
+
 		if (args != null && args.length > 0) {
 			String type = args[0].toLowerCase();
 
